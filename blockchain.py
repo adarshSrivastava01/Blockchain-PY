@@ -1,3 +1,5 @@
+import functools
+
 MINING_REWARD = 10
 
 genesis_block = {
@@ -52,10 +54,12 @@ def mine_block():
         'recipient': owner,
         'amount': MINING_REWARD
     }
-    open_transactions.append(reward_transaction)
-    block = {'previous_hash': hashed_block,
-    'index': len(blockchain),
-    'transactions': open_transactions
+    copied_transactions = open_transactions[:]
+    copied_transactions.append(reward_transaction)
+    block = {
+        'previous_hash': hashed_block,
+        'index': len(blockchain),
+        'transactions': copied_transactions
     }
     blockchain.append(block)
     return True
@@ -87,13 +91,14 @@ def get_balance(participant):
     recipient = [[each['amount'] for each in block['transactions'] if each['recipient'] == participant] for block in blockchain]
     for each in sender:
         if len(each) > 0:
-            amount_sent += each[0]
+            amount_sent += sum(each)
     for each in recipient:
         if len(each) > 0:
-            amount_recieved += each[0]
+            amount_recieved += sum(each)
     return amount_recieved - amount_sent
 
-
+def verify_transactions():
+    return all([verify_transaction(each) for each in open_transactions])
 
 # tx_amount = get_transaction_value()
 # add_transaction(tx_amount)
@@ -105,6 +110,8 @@ while take_input:
     print('1: Add a New Transaction Value: ')
     print('2: Mine a New Block: ')
     print('3: Output the blockchain blocks: ')
+    print('4: Output the participants: ')
+    print('5: Check Transaction Validity: ')
     print('h: Manipulate the chain: ')
     print('Q: Quit the Program: ')
     user_choice = get_user_choice()
@@ -121,6 +128,13 @@ while take_input:
             open_transactions = []
     elif user_choice == '3':
         print_blockchain_elements()
+    elif user_choice == '4':
+        print(participants)
+    elif user_choice == '5':
+        if verify_transactions():
+            print('All Transactions are valid.')
+        else:
+            print('There are Invalid Transactions!!')
     elif user_choice == 'h' or user_choice == 'H':
         if len(blockchain) >= 1:
             blockchain[0] = {
@@ -136,7 +150,7 @@ while take_input:
         print_blockchain_elements()
         print('Invalid Blockchain! ')
         break
-    print(get_balance('Max'))
+    print('Balance of {}: {:6.2f}'.format('Max', get_balance('Max')))
 else:
     print('User left')
 
