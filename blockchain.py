@@ -1,7 +1,8 @@
 import functools
 import hashlib
-import json
 from collections import OrderedDict
+
+from hash_util import hash_string_256, hash_block
 
 MINING_REWARD = 10
 
@@ -78,9 +79,6 @@ def print_blockchain_elements():
     else:
         print('-'*20)
 
-def hash_block(block):
-    return hashlib.sha256(json.dumps(block, sort_keys=True).encode()).hexdigest()
-
 def verify_chain():
     for (index,block) in enumerate(blockchain):
         if index == 0:
@@ -112,7 +110,7 @@ def verify_transactions():
 
 def valid_proof(transactions, last_hash, proof):
     guess = (str(transactions) + str(last_hash) + str(proof)).encode()
-    guess_hash = hashlib.sha256(guess).hexdigest()
+    guess_hash = hash_string_256(guess)
     print(guess_hash)
     return guess_hash[:2] == '00'
 
